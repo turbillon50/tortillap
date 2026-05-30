@@ -1,5 +1,5 @@
 /* Tortillap PWA Service Worker */
-const VERSION = 'tortillap-v1';
+const VERSION = 'tortillap-v2';
 const CORE_CACHE = `${VERSION}-core`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
@@ -11,7 +11,14 @@ const CORE_ASSETS = [
   '/beneficios.html',
   '/mercado.html',
   '/offline.html',
+  '/login.html',
+  '/registro.html',
+  '/perfil.html',
+  '/admin.html',
   '/app.js',
+  '/assets/tortillap.js',
+  '/assets/tw-config.js',
+  '/assets/theme.css',
   '/manifest.webmanifest',
   '/icons/icon.svg',
   '/icons/icon-192.png',
