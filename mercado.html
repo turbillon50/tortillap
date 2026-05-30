@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es" data-page="mercado"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tortillap - Mercado de Infraestructura</title>
+<meta name="application-name" content="Tortillap"/>
+<meta name="apple-mobile-web-app-title" content="Tortillap"/>
+<meta name="description" content="Tortillap es la red nacional de la industria tortillera: compras colectivas, beneficios, mercado B2B y comunidad en una sola plataforma."/>
+<meta name="theme-color" content="#0e0e0e"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<link rel="manifest" href="/manifest.webmanifest"/>
+<link rel="icon" href="/icons/favicon.ico" sizes="any"/>
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16.png"/>
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"/>
+<link rel="icon" type="image/svg+xml" href="/icons/icon.svg"/>
+
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-tint": "#ffb77d",
+                    "error": "#ffb4ab",
+                    "on-error-container": "#ffdad6",
+                    "tertiary-fixed": "#f9e287",
+                    "inverse-primary": "#904d00",
+                    "on-primary-fixed": "#2f1500",
+                    "on-tertiary-fixed": "#221b00",
+                    "surface-container-highest": "#353534",
+                    "tertiary": "#dcc66e",
+                    "surface-container-low": "#1c1b1b",
+                    "on-surface-variant": "#dbc2b0",
+                    "on-background": "#e5e2e1",
+                    "on-primary-fixed-variant": "#6e3900",
+                    "primary-fixed": "#ffdcc3",
+                    "surface-bright": "#3a3939",
+                    "outline-variant": "#554336",
+                    "on-secondary": "#532200",
+                    "on-tertiary-fixed-variant": "#534600",
+                    "on-error": "#690005",
+                    "outline": "#a38c7c",
+                    "on-secondary-fixed-variant": "#763300",
+                    "secondary": "#ffb68e",
+                    "secondary-fixed": "#ffdbca",
+                    "surface-dim": "#131313",
+                    "on-tertiary-container": "#4b3f00",
+                    "primary": "#ffb77d",
+                    "on-primary": "#4d2600",
+                    "surface-container-high": "#2a2a2a",
+                    "surface-variant": "#353534",
+                    "secondary-container": "#ab4c00",
+                    "surface-container": "#201f1f",
+                    "surface-container-lowest": "#0e0e0e",
+                    "background": "#131313",
+                    "primary-fixed-dim": "#ffb77d",
+                    "tertiary-container": "#bfab56",
+                    "surface": "#131313",
+                    "error-container": "#93000a",
+                    "primary-container": "#d97707",
+                    "secondary-fixed-dim": "#ffb68e",
+                    "inverse-on-surface": "#313030",
+                    "tertiary-fixed-dim": "#dcc66e",
+                    "on-surface": "#e5e2e1",
+                    "on-tertiary": "#3a3000",
+                    "on-secondary-container": "#ffe2d5",
+                    "inverse-surface": "#e5e2e1",
+                    "on-secondary-fixed": "#331200",
+                    "on-primary-container": "#432100"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "margin-desktop": "48px",
+                    "unit": "4px",
+                    "container-max": "1440px",
+                    "gutter": "24px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Montserrat"],
+                    "headline-lg-mobile": ["Montserrat"],
+                    "mono-data": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "headline-lg": ["Montserrat"],
+                    "display-lg": ["Montserrat"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                    "mono-data": ["14px", {"lineHeight": "1.4", "letterSpacing": "-0.01em", "fontWeight": "500"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .milled-edge {
+            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+        }
+        .glass-panel {
+            backdrop-filter: blur(24px);
+            background: rgba(39, 39, 42, 0.7);
+        }
+        .glow-hover:hover {
+            box-shadow: 0 0 20px rgba(217, 119, 6, 0.2);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-background/80 dark:bg-background/80 backdrop-blur-xl border-b border-white/10 shadow-2xl shadow-primary/5 flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 w-full">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" style="font-size: 28px;">hub</span>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold tracking-tight text-on-background">Tortillap</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex gap-8 mr-8">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors" href="#">RED</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors" href="#">BENEFICIOS</a>
+<a class="font-label-caps text-label-caps text-primary font-bold transition-colors border-b-2 border-primary pb-1" href="#">MERCADO</a>
+</div>
+<div class="w-10 h-10 rounded-full overflow-hidden border border-white/20">
+<img alt="User Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBk5dk_eDWOeJlH00A51MBzRN6zT_bQRYCVGrYhHCDsDoZ6XQa8kJcj_bDVTgh9WiQ4GiPdbR4jnIzIacDU8DMP2aFnuJzX-kuHTyh7mv8mzq6KJtZT1bHmniCLkjmS3Ldc3Olq1DIG0lh3UTwoU4sr0AsnD3GristZj33_sZlNL3hEUSYLuxEV8junlXsW3KLxyGes2pvNuQZ9Gcocz1dP_qvk6En2BEfw-rzZFie9uf6WBJkGGMZE4BOakkEpPKdOgUjT6uw9aNrc"/>
+</div>
+</div>
+</header>
+<main class="pt-24 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
+<!-- Hero / Section Title -->
+<section class="mb-12">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<span class="font-label-caps text-label-caps text-primary tracking-widest mb-2 block uppercase">Infraestructura Industrial</span>
+<h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-background">Mercado B2B</h2>
+<p class="text-on-surface-variant max-w-xl mt-2 font-body-md">Equipamiento de alta fidelidad y servicios técnicos especializados para la industria de la masa y la tortilla.</p>
+</div>
+<div class="flex gap-2">
+<button class="bg-surface-container-high text-on-surface p-3 rounded-xl border border-white/5 glow-hover transition-all">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+<button class="bg-surface-container-high text-on-surface p-3 rounded-xl border border-white/5 glow-hover transition-all">
+<span class="material-symbols-outlined">search</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Categories Asymmetric Layout -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-16">
+<div class="relative h-48 md:h-64 rounded-xl overflow-hidden group cursor-pointer border border-white/10 milled-edge">
+<img class="absolute inset-0 w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" data-alt="A high-tech industrial assembly line in a clean, modern factory setting. The lighting is cold and clinical, with blue and silver metallic reflections. The atmosphere conveys professional engineering excellence and scalable industrial power. Sharp focus on mechanical precision and automated systems." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdoS0XwqxxZAqBEFsQjDJ1B1QBOiflHR4qcZL7y6t-3WD7tRbyLAyLehSXJ8B2nZXOvhr9iV-bw-o_bQlMjeKNoinQz49rRczMujaTBc4x1dDHRxmGHmXSThtTYC8yH4TwYX_mfjvphQsLWTWHp1qIBApexU9NVPVwu8EQsdaIz_WxxwC_tHoQAikTKWoLPpx2y_725rAN1t_WTmNLTswaGOflYEsgDXY0RfzqR_dxsxPp8EKQZDpzBCvbf3LARakAC5fuzNURkldO"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+<div class="absolute bottom-6 left-6">
+<h3 class="font-headline-md text-headline-md text-white mb-1">Maquinaria Nueva</h3>
+<p class="font-label-caps text-label-caps text-primary">ALTO RENDIMIENTO</p>
+</div>
+</div>
+<div class="relative h-48 md:h-64 rounded-xl overflow-hidden group cursor-pointer border border-white/10 milled-edge">
+<img class="absolute inset-0 w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" data-alt="Detail of a vintage but well-maintained industrial engine with copper and steel components. Dark matte background with soft industrial lighting highlighting the mechanical textures and durability. The aesthetic is rugged yet reliable, suggesting heavy-duty performance and industrial history." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAViqcBDQ54HfG1VNkdNc55n65GSKSJZVZu2oAkagzJDA6UpOg1N4FokvH7KHJcY59-AIhk0ys-10_3e2-oay3RaWOfeQV3vuJAhMGuBGP2eWFm3ivJ5ylfdUE_E-_dxxI4rvBzqHawXRfsA4hXRX9BG-m7y5Wiwih_99RsxN_p-j4miyjZ9nC23tWw5iU6EtMip7bOVdg8u_YlSwCdjStRGdt3_GzncOQr_hS03f6NtskSJ81AEpFweMytXJ1FCxEA4HNNECWLUKeR"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+<div class="absolute bottom-6 left-6">
+<h3 class="font-headline-md text-headline-md text-white mb-1">Equipo Usado</h3>
+<p class="font-label-caps text-label-caps text-primary">VALOR ESTRATÉGICO</p>
+</div>
+</div>
+<div class="relative h-48 md:h-64 rounded-xl overflow-hidden group cursor-pointer border border-white/10 milled-edge">
+<img class="absolute inset-0 w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" data-alt="A close-up shot of a technician's gloved hands using high-precision digital tools on a complex circuit board. The lighting features warm copper glows against deep black surroundings, representing technical expertise and high-end digital maintenance. Clean, professional, and sophisticated atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7djY5Ta8zOQD2UajIi_iV-iedgvUFFm-DzhHedfsCK78p1jtzWruZFveNOKK4kDi_xbWqqFbDh--sYbWnAZwhv194jBm_niS5IJ9wSu6IhxxSkB3caB0tKBD61rymPSzRc2Q1q5_jfqf7JDSRFm5tVlAbHxkPpaLUeIXm0h3sLHVvnULwAU1hfG9cxmTH1gu8Fvgn45p8lGV9pmg4t6Dfog24yLyEjwWTz1NVL6ogP6lF0eTSN6z8hMBjilMkTI2dDiKPDXtsZ_BO"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+<div class="absolute bottom-6 left-6">
+<h3 class="font-headline-md text-headline-md text-white mb-1">Mantenimiento</h3>
+<p class="font-label-caps text-label-caps text-primary">SOPORTE TÉCNICO</p>
+</div>
+</div>
+</section>
+<!-- Product Grid (Bento Style Variation) -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Product Card 1 -->
+<div class="bg-surface-container-low border border-white/5 rounded-xl overflow-hidden milled-edge flex flex-col hover:border-primary/30 transition-all group">
+<div class="h-56 overflow-hidden relative">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A powerful industrial corn mill machine made of polished stainless steel, standing in a sleek dark environment. Cinematic lighting creates sharp highlights on the metallic edges. The machine looks robust, modern, and high-capacity, designed for heavy industrial use in a professional food production facility." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIwvM1rGbJUEeSP4tk7VokINnlTtGABfSAXoB1B_CGIKHUczjWpxQQjzotDX08C8qysYtKwOHpI12GlLclWdiArcIIckHD0AxAbyO_cOJmBptBBQjAWNQZ7910wp1fc9EsFolD4KDfC0AJJmBJN25BHg9m-BoNXqUNv4e32BozHkeXJSmAK86rYR9PZ-iwXc7S23hlj3GiSkPCqa83pWPq8LCO--Skond2AmiI2HaEM9bdKFHNxTjEZqpHKKsFIV93Zp2ibH_Ao91k"/>
+<div class="absolute top-4 right-4 px-3 py-1 bg-primary/20 backdrop-blur-md rounded-full border border-primary/30">
+<span class="font-label-caps text-label-caps text-primary">NUEVO</span>
+</div>
+</div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h4 class="font-headline-md text-body-lg text-white mb-1">Molino Industrial Pro-X</h4>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="font-mono-data text-[12px]">Guadalajara, JAL</span>
+</div>
+</div>
+</div>
+<div class="mt-auto">
+<div class="flex items-baseline gap-2 mb-6">
+<span class="font-mono-data text-headline-md text-primary">$185,000</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant">MXN</span>
+</div>
+<button class="w-full bg-primary-container text-on-primary-container py-3 rounded-lg font-label-caps text-label-caps hover:bg-primary hover:text-on-primary transition-all flex items-center justify-center gap-2 active:scale-95">
+                            CONTACTAR PROVEEDOR
+                            <span class="material-symbols-outlined text-[18px]">send</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="bg-surface-container-low border border-white/5 rounded-xl overflow-hidden milled-edge flex flex-col hover:border-primary/30 transition-all group">
+<div class="h-56 overflow-hidden relative">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Close-up of industrial machinery gears and belts in motion, with orange sparks and warm lighting reflecting off high-grade steel. The image captures the dynamic energy of a tortilla manufacturing plant. The style is cinematic and industrial, emphasizing durability and mechanical efficiency." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRDhvu3o-njtgv04PXy9qkkMZydhQeYnUpD94X3I7nRPaWC1UAO9xha-_z_c80dPluxATYVREqIthsx-z-JWQslLHdZYLQjL-BSP9R0tnlzqjLk_gNTKSF9VG4uOqBE4u-vcHFTVoVirdbOVVxk5kN85VKdCmmmKJ6k0f4FeAEtNktWCvIMi9AjTmbq6R37OdZHkitcJUB2M5dVW53oXbB2KT2-U4VVzxwe5r3YJF7XvkczzqXejRgsGO-S3V9a7z9eJr-Sv1EVxep"/>
+<div class="absolute top-4 right-4 px-3 py-1 bg-secondary/20 backdrop-blur-md rounded-full border border-secondary/30">
+<span class="font-label-caps text-label-caps text-secondary">USADO</span>
+</div>
+</div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h4 class="font-headline-md text-body-lg text-white mb-1">Máquina Tortilladora C-14</h4>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="font-mono-data text-[12px]">Querétaro, QRO</span>
+</div>
+</div>
+</div>
+<div class="mt-auto">
+<div class="flex items-baseline gap-2 mb-6">
+<span class="font-mono-data text-headline-md text-primary">$92,500</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant">MXN</span>
+</div>
+<button class="w-full bg-primary-container text-on-primary-container py-3 rounded-lg font-label-caps text-label-caps hover:bg-primary hover:text-on-primary transition-all flex items-center justify-center gap-2 active:scale-95">
+                            CONTACTAR PROVEEDOR
+                            <span class="material-symbols-outlined text-[18px]">send</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 3 -->
+<div class="bg-surface-container-low border border-white/5 rounded-xl overflow-hidden milled-edge flex flex-col hover:border-primary/30 transition-all group">
+<div class="h-56 overflow-hidden relative">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Automated industrial conveyor belt for dough processing in a high-tech food manufacturing facility. The scene is dominated by industrial gray tones and polished metallic surfaces, with subtle orange LED indicators providing a modern tech feel. The atmosphere is efficient, clean, and highly organized." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfSXXzfsacsfm1h966Rkwv8kz_0DjbmHcQmASUuDvSHAH6ha-aNkDrbubMyFLlvnN_wk7O6BspLMfjwT8VDHRO-fZlSjK_RchAmPCSU_6PMXp1XqSbeQlvTRjyyRfWXPXIu6JiLeYz0MkuCWgPGQj3a6TK_8CGiWPjxdgi_1nms_5b6COc8UZhOfSt-tldfOKjAVJvaug5ZQ78CBkLQPExMo8n1Z7LsPB1vGoTsmoTvR0qaNmJWiel9wC7EaURyJ9nVvQMoMkIfwT1"/>
+<div class="absolute top-4 right-4 px-3 py-1 bg-primary/20 backdrop-blur-md rounded-full border border-primary/30">
+<span class="font-label-caps text-label-caps text-primary">NUEVO</span>
+</div>
+</div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h4 class="font-headline-md text-body-lg text-white mb-1">Amasadora Automática 50kg</h4>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="font-mono-data text-[12px]">Mérida, YUC</span>
+</div>
+</div>
+</div>
+<div class="mt-auto">
+<div class="flex items-baseline gap-2 mb-6">
+<span class="font-mono-data text-headline-md text-primary">$54,000</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant">MXN</span>
+</div>
+<button class="w-full bg-primary-container text-on-primary-container py-3 rounded-lg font-label-caps text-label-caps hover:bg-primary hover:text-on-primary transition-all flex items-center justify-center gap-2 active:scale-95">
+                            CONTACTAR PROVEEDOR
+                            <span class="material-symbols-outlined text-[18px]">send</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 4 -->
+<div class="bg-surface-container-low border border-white/5 rounded-xl overflow-hidden milled-edge flex flex-col hover:border-primary/30 transition-all group">
+<div class="h-56 overflow-hidden relative">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Interior of a modern food processing plant with rows of heavy-duty stainless steel tanks and piping. Professional lighting casts soft shadows and sharp highlights on the clean surfaces. The aesthetic is purely industrial-tech, conveying a sense of large-scale production capability and absolute hygiene standards." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXfag2T8fykSS5xKEOXEmcYfgb4yCpCpuXGnshrmfMveWDNquCGc33Ga8lHiF_KEvYCzB0LYRMLsDkBizxEWmQc7I6difUpYjnhOW_m1YmOtEFcMfyzExq84LiSrfO4jzzLreUb67fCrDIUedujCYOL64JN9O9_AdhNRQnzWCqkc2ruTrjVRkaA2zinL75ZxngYYMZyOsrU9ozS9PrWTFTzTxcjnFgTsKPHt2JE-F9wl6rDhQxf7J4_6UMILB2UtpnV268QFTVGFvw"/>
+<div class="absolute top-4 right-4 px-3 py-1 bg-tertiary/20 backdrop-blur-md rounded-full border border-tertiary/30">
+<span class="font-label-caps text-label-caps text-tertiary">REFURBISHED</span>
+</div>
+</div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h4 class="font-headline-md text-body-lg text-white mb-1">Tanque de Cocimiento 200L</h4>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="font-mono-data text-[12px]">Estado de México</span>
+</div>
+</div>
+</div>
+<div class="mt-auto">
+<div class="flex items-baseline gap-2 mb-6">
+<span class="font-mono-data text-headline-md text-primary">$32,900</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant">MXN</span>
+</div>
+<button class="w-full bg-primary-container text-on-primary-container py-3 rounded-lg font-label-caps text-label-caps hover:bg-primary hover:text-on-primary transition-all flex items-center justify-center gap-2 active:scale-95">
+                            CONTACTAR PROVEEDOR
+                            <span class="material-symbols-outlined text-[18px]">send</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Technical Stats Panel -->
+<section class="mt-16 bg-surface-container border border-white/5 rounded-2xl p-8 milled-edge flex flex-wrap gap-8 items-center justify-around">
+<div class="text-center">
+<span class="font-display-lg text-display-lg text-primary block mb-2">+450</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">EQUIPOS DISPONIBLES</span>
+</div>
+<div class="w-px h-16 bg-white/10 hidden md:block"></div>
+<div class="text-center">
+<span class="font-display-lg text-display-lg text-primary block mb-2">24/7</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">SOPORTE TÉCNICO</span>
+</div>
+<div class="w-px h-16 bg-white/10 hidden md:block"></div>
+<div class="text-center">
+<span class="font-display-lg text-display-lg text-primary block mb-2">32</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">ESTADOS COBERTURA</span>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-lg rounded-full z-50 bg-surface-container/90 dark:bg-surface-container/90 backdrop-blur-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex justify-around items-center h-20 px-4">
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary-container transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-label-caps text-[10px] mt-1">Red</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary-container transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">loyalty</span>
+<span class="font-label-caps text-[10px] mt-1">Beneficios</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary-container transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-caps text-[10px] mt-1">Comunidad</span>
+</a>
+<!-- Active State: Mercado -->
+<a class="flex flex-col items-center justify-center text-primary bg-primary/10 rounded-full p-2 scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">shopping_cart</span>
+<span class="font-label-caps text-[10px] mt-1 font-bold">Mercado</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary-container transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-caps text-[10px] mt-1">Perfil</span>
+</a>
+</nav>
+<script>
+        // Simple micro-interaction for active nodes simulation
+        document.querySelectorAll('.material-symbols-outlined').forEach(icon => {
+            icon.addEventListener('mouseenter', () => {
+                icon.style.textShadow = '0 0 8px rgba(255, 183, 125, 0.6)';
+            });
+            icon.addEventListener('mouseleave', () => {
+                icon.style.textShadow = 'none';
+            });
+        });
+    </script>
+<script src="/app.js" defer></script>
+</body></html>
