@@ -10,7 +10,9 @@
     beneficios: '/beneficios.html',
     comunidad: '/red.html',
     mercado: '/mercado.html',
-    perfil: '/index.html',
+    perfil: '/perfil.html',
+    registro: '/registro.html',
+    admin: '/admin.html',
   };
 
   function norm(s) {

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html class="dark" lang="es" data-page="registro">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Tortillap — Crea tu cuenta</title>
+<meta name="theme-color" content="#0e0e0e"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<link rel="manifest" href="/manifest.webmanifest"/>
+<link rel="icon" href="/icons/favicon.ico" sizes="any"/>
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"/>
+<script>(function(){try{var t=localStorage.getItem("tp-theme");if(t!=="light"&&t!=="dark"){t=window.matchMedia&&window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";}var r=document.documentElement;r.classList.toggle("dark",t==="dark");r.classList.toggle("light",t==="light");}catch(e){}})();</script>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="/assets/tw-config.js"></script>
+<link rel="stylesheet" href="/assets/theme.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+  .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;}
+  .step-enter{animation:stepIn .45s cubic-bezier(.16,1,.3,1) both;}
+  @keyframes stepIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
+  .type-card[aria-pressed="true"]{border-color:rgb(var(--primary));background:rgb(var(--primary)/.10);box-shadow:0 0 0 3px rgb(var(--primary)/.18);}
+  @media (prefers-reduced-motion: reduce){.step-enter{animation:none;}}
+</style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-[100dvh] flex flex-col">
+<header class="px-margin-mobile md:px-margin-desktop h-16 flex items-center justify-between">
+<a href="/index.html" class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-3xl copper-glow">hub</span>
+<span class="font-headline-lg text-headline-lg font-bold tracking-tight">Tortillap</span>
+</a>
+<a href="/login.html" class="text-on-surface-variant font-label-caps text-label-caps hover:text-primary">YA TENGO CUENTA</a>
+</header>
+
+<!-- Progress -->
+<div class="px-margin-mobile md:px-margin-desktop max-w-2xl w-full mx-auto mt-2">
+<div class="flex items-center justify-between mb-2">
+<span id="step-name" class="font-label-caps text-label-caps text-primary uppercase tracking-widest">Tu perfil</span>
+<span id="step-count" class="font-mono-data text-mono-data text-on-surface-variant">Paso 1 de 5</span>
+</div>
+<div class="h-1.5 rounded-full bg-surface-container-high overflow-hidden">
+<div id="progress-bar" class="h-full bg-primary-container rounded-full transition-all duration-500" style="width:20%"></div>
+</div>
+</div>
+
+<main class="flex-1 px-margin-mobile md:px-margin-desktop max-w-2xl w-full mx-auto py-6 pb-40">
+<div id="wizard"></div>
+</main>
+
+<!-- Sticky controls -->
+<div class="fixed bottom-0 inset-x-0 z-40 bg-background/85 backdrop-blur-xl border-t border-outline-variant/30">
+<div class="max-w-2xl mx-auto px-margin-mobile py-4 flex items-center gap-4">
+<button id="back-btn" class="px-5 py-3 rounded-xl border border-outline-variant/60 text-on-surface font-bold hidden items-center gap-1 active:scale-95 transition-all">
+<span class="material-symbols-outlined">chevron_left</span>Atrás
+</button>
+<button id="next-btn" class="flex-1 bg-primary-container text-on-primary-container py-4 rounded-xl font-bold font-headline-md text-headline-md copper-glow active:scale-95 transition-all flex items-center justify-center gap-2">
+<span class="next-label">Continuar</span>
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+
+<script src="/assets/tortillap.js" defer></script>
+<script>
+(function () {
+  'use strict';
+  var STEP_NAMES = ['Tu perfil', 'Tu cuenta', 'Tu negocio', 'Tu ubicación', 'Revisión'];
+  var state = {
+    step: 0,
+    type: null,
+    name: '', email: '', phone: '', password: '',
+    business: { tradeName: '', years: '', employees: '', category: '', output: '', description: '' },
+    location: { state: '', city: '', address: '', lat: null, lng: null },
+  };
+
+  var wizard = document.getElementById('wizard');
+  var backBtn = document.getElementById('back-btn');
+  var nextBtn = document.getElementById('next-btn');
+
+  function esc(s){ return (s||'').replace(/[&<>"]/g, function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+
+  // --- Per-type adaptive business fields ---
+  var BUSINESS_FIELDS = {
+    tortilleria: [
+      { k: 'tradeName', label: 'Nombre comercial', ph: 'Tortillería La Espiga', req: true },
+      { k: 'years', label: 'Años operando', ph: '8', type: 'number' },
+      { k: 'employees', label: 'Empleados', ph: '5', type: 'number' },
+      { k: 'output', label: 'Producción diaria (kg)', ph: '300', type: 'number' },
+      { k: 'description', label: '¿Qué te hace única?', ph: 'Tortilla de maíz nixtamalizado artesanal…', area: true },
+    ],
+    proveedor: [
+      { k: 'tradeName', label: 'Nombre de la empresa', ph: 'Insumos del Bajío', req: true },
+      { k: 'category', label: 'Categoría de insumo', ph: 'Maíz / Harina / Maquinaria…' },
+      { k: 'output', label: 'Capacidad mensual', ph: '50 toneladas' },
+      { k: 'description', label: 'Describe tu oferta', ph: 'Maíz blanco de primera, entrega en 24h…', area: true },
+    ],
+    distribuidor: [
+      { k: 'tradeName', label: 'Nombre comercial', ph: 'Distribuidora Centro', req: true },
+      { k: 'employees', label: 'Unidades en flota', ph: '4', type: 'number' },
+      { k: 'category', label: 'Zona de reparto', ph: 'Valle de México' },
+      { k: 'description', label: 'Cobertura y servicio', ph: 'Reparto diario a 120 puntos de venta…', area: true },
+    ],
+    aliado: [
+      { k: 'tradeName', label: 'Organización (opcional)', ph: 'Cámara, cooperativa, universidad…' },
+      { k: 'description', label: '¿Por qué te unes a la red?', ph: 'Quiero apoyar a la industria tortillera…', area: true },
+    ],
+  };
+
+  function field(id, label, value, opts) {
+    opts = opts || {};
+    var input = opts.area
+      ? '<textarea id="' + id + '" rows="3" class="tp-field resize-none" placeholder="' + esc(opts.ph||'') + '">' + esc(value) + '</textarea>'
+      : '<input id="' + id + '" type="' + (opts.type||'text') + '" class="tp-field" placeholder="' + esc(opts.ph||'') + '" value="' + esc(value) + '"' + (opts.autocomplete?' autocomplete="'+opts.autocomplete+'"':'') + '/>';
+    return '<div><label class="tp-label" for="' + id + '">' + label + (opts.req?' *':'') + '</label>' + input + '</div>';
+  }
+
+  function render() {
+    document.getElementById('step-name').textContent = STEP_NAMES[state.step];
+    document.getElementById('step-count').textContent = 'Paso ' + (state.step + 1) + ' de 5';
+    document.getElementById('progress-bar').style.width = ((state.step + 1) * 20) + '%';
+    backBtn.classList.toggle('hidden', state.step === 0);
+    backBtn.classList.toggle('flex', state.step !== 0);
+    nextBtn.querySelector('.next-label').textContent = state.step === 4 ? 'Crear mi cuenta' : 'Continuar';
+    nextBtn.querySelector('.material-symbols-outlined').textContent = state.step === 4 ? 'check_circle' : 'chevron_right';
+    [renderType, renderAccount, renderBusiness, renderLocation, renderReview][state.step]();
+  }
+
+  function renderType() {
+    var cards = TP.PROFILE_TYPES.map(function (t) {
+      var on = state.type === t.id;
+      return '<button type="button" data-type="' + t.id + '" aria-pressed="' + on + '" ' +
+        'class="type-card text-left p-5 rounded-xl border border-outline-variant/50 bg-surface-container-low hover:border-primary/50 transition-all flex items-start gap-4">' +
+        '<span class="material-symbols-outlined text-primary text-3xl copper-glow">' + t.icon + '</span>' +
+        '<span><span class="block font-headline-md text-headline-md">' + t.label + '</span>' +
+        '<span class="block text-on-surface-variant font-body-md text-sm mt-1">' + t.blurb + '</span></span></button>';
+    }).join('');
+    wizard.innerHTML =
+      '<div class="step-enter">' +
+      '<h1 class="font-display-lg text-[28px] leading-tight mb-2">¿Cómo participas en la red?</h1>' +
+      '<p class="text-on-surface-variant mb-6">Elige tu rol y armaremos una experiencia de registro a tu medida.</p>' +
+      '<div class="grid gap-3">' + cards + '</div></div>';
+    wizard.querySelectorAll('.type-card').forEach(function (b) {
+      b.addEventListener('click', function () {
+        state.type = b.getAttribute('data-type');
+        wizard.querySelectorAll('.type-card').forEach(function (x) { x.setAttribute('aria-pressed', x === b); });
+      });
+    });
+  }
+
+  function renderAccount() {
+    var hi = state.name ? ('¡Hola, ' + esc(state.name.split(' ')[0]) + '! ') : '';
+    wizard.innerHTML =
+      '<div class="step-enter space-y-5">' +
+      '<div><h1 class="font-display-lg text-[28px] leading-tight mb-2">' + hi + 'Crea tu acceso</h1>' +
+      '<p class="text-on-surface-variant">Tu llave personal a Tortillap como <span class="text-primary font-bold">' + esc(TP.typeLabel(state.type)) + '</span>.</p></div>' +
+      field('f-name', 'Nombre completo', state.name, { ph: 'María Hernández', req: true, autocomplete: 'name' }) +
+      field('f-email', 'Correo electrónico', state.email, { ph: 'maria@correo.mx', type: 'email', req: true, autocomplete: 'email' }) +
+      field('f-phone', 'Teléfono (WhatsApp)', state.phone, { ph: '55 1234 5678', type: 'tel', autocomplete: 'tel' }) +
+      field('f-pass', 'Contraseña', state.password, { ph: 'Mínimo 6 caracteres', type: 'password', req: true, autocomplete: 'new-password' }) +
+      '</div>';
+  }
+
+  function renderBusiness() {
+    var fields = BUSINESS_FIELDS[state.type] || BUSINESS_FIELDS.aliado;
+    var html = fields.map(function (f) {
+      return field('b-' + f.k, f.label, state.business[f.k] || '', f);
+    }).join('');
+    wizard.innerHTML =
+      '<div class="step-enter space-y-5">' +
+      '<div><h1 class="font-display-lg text-[28px] leading-tight mb-2">Cuéntanos de tu ' +
+      (state.type === 'aliado' ? 'interés' : 'negocio') + '</h1>' +
+      '<p class="text-on-surface-variant">Esto personaliza tu perfil público en la red.</p></div>' + html + '</div>';
+  }
+
+  function renderLocation() {
+    var opts = '<option value="">Selecciona tu estado…</option>' +
+      TP.STATES.map(function (s) { return '<option' + (state.location.state === s ? ' selected' : '') + '>' + s + '</option>'; }).join('');
+    var hasPin = state.location.lat != null;
+    wizard.innerHTML =
+      '<div class="step-enter space-y-5">' +
+      '<div><h1 class="font-display-lg text-[28px] leading-tight mb-2">¿Dónde te encuentras?</h1>' +
+      '<p class="text-on-surface-variant">Tu ubicación te conecta con la red local y aparece en el mapa nacional.</p></div>' +
+      '<div><label class="tp-label" for="l-state">Estado *</label><select id="l-state" class="tp-field">' + opts + '</select></div>' +
+      field('l-city', 'Municipio / Ciudad', state.location.city, { ph: 'Toluca', req: true }) +
+      field('l-address', 'Dirección o colonia', state.location.address, { ph: 'Av. Hidalgo 120, Centro' }) +
+      '<button type="button" id="geo-btn" class="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-primary/40 text-primary font-bold bg-primary/5 active:scale-95 transition-all">' +
+      '<span class="material-symbols-outlined">my_location</span>Usar mi ubicación actual</button>' +
+      '<div id="geo-readout" class="' + (hasPin ? '' : 'hidden ') + 'rounded-xl overflow-hidden border border-outline-variant/40">' +
+      '<div class="relative h-40 bg-surface-container-high" style="background-image:radial-gradient(circle at 50% 40%,rgba(217,119,6,.18),transparent 60%);">' +
+      '<span class="material-symbols-outlined text-primary copper-glow absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full text-4xl">location_on</span>' +
+      '<span class="absolute left-1/2 top-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-primary/30"></span></div>' +
+      '<div class="p-3 bg-surface-container-low font-mono-data text-mono-data text-on-surface-variant" id="geo-coords">' +
+      (hasPin ? ('Lat ' + state.location.lat.toFixed(4) + ', Lng ' + state.location.lng.toFixed(4)) : '') + '</div></div>' +
+      '</div>';
+    document.getElementById('geo-btn').addEventListener('click', captureGeo);
+  }
+
+  function captureGeo() {
+    var btn = document.getElementById('geo-btn');
+    if (!navigator.geolocation) { alert('Tu dispositivo no permite geolocalización. Escribe la dirección manualmente.'); return; }
+    btn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span>Localizando…';
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      state.location.lat = pos.coords.latitude;
+      state.location.lng = pos.coords.longitude;
+      syncLocation();
+      renderLocation();
+    }, function () {
+      btn.innerHTML = '<span class="material-symbols-outlined">my_location</span>Usar mi ubicación actual';
+      alert('No pudimos obtener tu ubicación. Revisa los permisos del navegador.');
+    }, { enableHighAccuracy: true, timeout: 10000 });
+  }
+
+  function renderReview() {
+    var b = state.business, l = state.location;
+    function row(k, v) { return v ? '<div class="flex justify-between gap-4 py-2 border-b border-outline-variant/20"><span class="text-on-surface-variant">' + k + '</span><span class="font-bold text-right">' + esc(v) + '</span></div>' : ''; }
+    wizard.innerHTML =
+      '<div class="step-enter">' +
+      '<h1 class="font-display-lg text-[28px] leading-tight mb-2">Revisa y confirma</h1>' +
+      '<p class="text-on-surface-variant mb-6">Así se verá tu registro en la red.</p>' +
+      '<div class="bg-surface-container-low border border-outline-variant/40 rounded-xl p-5 milled-edge">' +
+      '<div class="flex items-center gap-2 mb-3"><span class="material-symbols-outlined text-primary copper-glow">badge</span>' +
+      '<span class="font-headline-md text-headline-md">' + esc(TP.typeLabel(state.type)) + '</span></div>' +
+      row('Nombre', state.name) + row('Correo', state.email) + row('Teléfono', state.phone) +
+      row('Negocio', b.tradeName) + row('Categoría', b.category) + row('Años', b.years) +
+      row('Empleados', b.employees) + row('Capacidad', b.output) +
+      row('Estado', l.state) + row('Ciudad', l.city) + row('Dirección', l.address) +
+      (l.lat != null ? row('Coordenadas', l.lat.toFixed(4) + ', ' + l.lng.toFixed(4)) : '') +
+      '</div>' +
+      '<p id="reg-error" class="hidden text-error text-sm mt-4 flex items-center gap-2"><span class="material-symbols-outlined text-base">error</span><span></span></p>' +
+      '<p class="text-on-surface-variant text-xs mt-4">Al crear tu cuenta aceptas formar parte de la red Tortillap. Tus datos se guardan en este dispositivo.</p>' +
+      '</div>';
+  }
+
+  // --- collect current step's inputs back into state ---
+  function syncAccount() {
+    state.name = (val('f-name') || state.name).trim();
+    state.email = (val('f-email') || state.email).trim();
+    state.phone = (val('f-phone') || state.phone).trim();
+    state.password = val('f-pass') || state.password;
+  }
+  function syncBusiness() {
+    (BUSINESS_FIELDS[state.type] || BUSINESS_FIELDS.aliado).forEach(function (f) {
+      var v = val('b-' + f.k); if (v != null) state.business[f.k] = v.trim();
+    });
+  }
+  function syncLocation() {
+    var s = val('l-state'); if (s != null) state.location.state = s;
+    var c = val('l-city'); if (c != null) state.location.city = c.trim();
+    var a = val('l-address'); if (a != null) state.location.address = a.trim();
+  }
+  function val(id) { var el = document.getElementById(id); return el ? el.value : null; }
+
+  function validate() {
+    var err;
+    if (state.step === 0 && !state.type) err = 'Elige cómo participas en la red.';
+    if (state.step === 1) {
+      syncAccount();
+      if (!state.name) err = 'Escribe tu nombre.';
+      else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(state.email)) err = 'Escribe un correo válido.';
+      else if (state.password.length < 6) err = 'La contraseña necesita al menos 6 caracteres.';
+      else if (TP.store.findByEmail(state.email)) err = 'Ya existe una cuenta con ese correo.';
+    }
+    if (state.step === 2) {
+      syncBusiness();
+      if (state.type !== 'aliado' && !state.business.tradeName) err = 'Escribe el nombre de tu negocio.';
+    }
+    if (state.step === 3) {
+      syncLocation();
+      if (!state.location.state) err = 'Selecciona tu estado.';
+      else if (!state.location.city) err = 'Escribe tu municipio o ciudad.';
+    }
+    if (err) { flash(err); return false; }
+    return true;
+  }
+
+  function flash(msg) {
+    var e = document.getElementById('reg-error');
+    if (e) { e.querySelector('span:last-child').textContent = msg; e.classList.remove('hidden'); return; }
+    alert(msg);
+  }
+
+  async function finish() {
+    var btn = nextBtn.querySelector('.next-label');
+    btn.textContent = 'Creando…'; nextBtn.disabled = true;
+    try {
+      await TP.store.register({
+        type: state.type, name: state.name, email: state.email,
+        phone: state.phone, password: state.password,
+        business: state.business, location: state.location,
+      });
+      location.href = '/perfil.html?welcome=1';
+    } catch (ex) {
+      flash(ex.message); btn.textContent = 'Crear mi cuenta'; nextBtn.disabled = false;
+    }
+  }
+
+  nextBtn.addEventListener('click', function () {
+    if (!validate()) return;
+    if (state.step === 4) { finish(); return; }
+    state.step++; render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+  backBtn.addEventListener('click', function () {
+    // keep whatever was typed
+    if (state.step === 1) syncAccount();
+    if (state.step === 2) syncBusiness();
+    if (state.step === 3) syncLocation();
+    if (state.step > 0) { state.step--; render(); }
+  });
+
+  document.addEventListener('DOMContentLoaded', function () {
+    if (window.TP && TP.store.current()) { location.href = '/perfil.html'; return; }
+    render();
+  });
+})();
+</script>
+</body>
+</html>
