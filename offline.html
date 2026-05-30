@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Tortillap — Sin conexión</title>
+<meta name="theme-color" content="#0e0e0e"/>
+<link rel="icon" href="/icons/favicon.ico" sizes="any"/>
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    min-height: 100dvh; display: flex; align-items: center; justify-content: center;
+    background: #0e0e0e; color: #e5e2e1; font-family: Inter, system-ui, sans-serif;
+    text-align: center; padding: 24px;
+    background-image: radial-gradient(circle at 50% 30%, rgba(217,119,6,.12), transparent 60%);
+  }
+  .card { max-width: 420px; }
+  .logo { width: 96px; height: 96px; margin: 0 auto 24px; filter: drop-shadow(0 0 24px rgba(217,119,6,.4)); }
+  h1 { font-family: Montserrat, sans-serif; font-size: 28px; font-weight: 700; margin-bottom: 12px; }
+  p { color: #dbc2b0; font-size: 16px; line-height: 1.6; margin-bottom: 28px; }
+  button {
+    background: #d97706; color: #0e0e0e; font-weight: 700; font-family: Inter, sans-serif;
+    border: none; border-radius: 9999px; padding: 14px 28px; font-size: 16px; cursor: pointer;
+    box-shadow: 0 8px 24px rgba(217,119,6,.4); transition: transform .15s ease;
+  }
+  button:active { transform: scale(.96); }
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px; margin-bottom: 24px;
+    padding: 6px 14px; border-radius: 9999px; background: rgba(217,119,6,.1);
+    border: 1px solid rgba(217,119,6,.25); font-size: 12px; letter-spacing: .1em;
+    text-transform: uppercase; color: #ffb77d; font-weight: 600;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #ffb4ab; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <img class="logo" src="/icons/icon.svg" alt="Tortillap"/>
+    <div class="badge"><span class="dot"></span> Red sin conexión</div>
+    <h1>Estás sin conexión</h1>
+    <p>No pudimos contactar a la red Tortillap. Revisa tu conexión a internet e inténtalo de nuevo. Las secciones que ya visitaste siguen disponibles.</p>
+    <button onclick="location.reload()">Reintentar</button>
+  </div>
+</body>
+</html>
