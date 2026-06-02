@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 229, 226, 225;
+  --background-start-rgb: 19, 19, 19;
+  --background-end-rgb: 19, 19, 19;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-start-rgb));
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.milled-edge {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.copper-glow {
+  box-shadow: 0 0 20px rgba(217, 119, 6, 0.2);
+  transition: box-shadow 0.3s ease;
+}
+
+.copper-glow:hover {
+  box-shadow: 0 0 30px rgba(217, 119, 6, 0.4);
+}
+
+.glass-panel {
+  background: rgba(39, 39, 42, 0.8);
+  backdrop-filter: blur(24px);
+}
+
+@keyframes pulse-node {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.5); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+
+.node-pulse {
+  animation: pulse-node 3s infinite ease-in-out;
+}
+
+@keyframes flow-line {
+  0% { stroke-dashoffset: 100; opacity: 0; }
+  20% { opacity: 0.8; }
+  80% { opacity: 0.8; }
+  100% { stroke-dashoffset: 0; opacity: 0; }
+}
+
+.connection-line {
+  stroke-dasharray: 20 80;
+  animation: flow-line 5s infinite linear;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
