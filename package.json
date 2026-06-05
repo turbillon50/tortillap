@@ -1,0 +1,10 @@
+{
+  "name": "tortillap",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tortillap PWA — funciones serverless para notificaciones push",
+  "dependencies": {
+    "web-push": "^3.6.7",
+    "@neondatabase/serverless": "^0.10.4"
+  }
+}

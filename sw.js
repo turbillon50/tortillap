@@ -1,5 +1,5 @@
 /* Tortillap PWA Service Worker */
-const VERSION = 'tortillap-v2';
+const VERSION = 'tortillap-v3';
 const CORE_CACHE = `${VERSION}-core`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
@@ -98,6 +98,30 @@ self.addEventListener('fetch', (event) => {
         })
         .catch(() => cached);
       return cached || network;
+    })
+  );
+});
+
+/* ---- Web Push ------------------------------------------------------- */
+self.addEventListener('push', (event) => {
+  let data = { title: 'Tortillap', message: 'Tienes una notificación nueva.' };
+  try { if (event.data) data = Object.assign(data, event.data.json()); } catch (e) {}
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.message,
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
+      data: { url: '/' },
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      for (const c of list) { if ('focus' in c) return c.focus(); }
+      return clients.openWindow('/');
     })
   );
 });

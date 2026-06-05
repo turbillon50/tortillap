@@ -136,7 +136,7 @@
         id: genId(),
         createdAt: Date.now(),
         role: 'member',
-        status: 'active',
+        status: (data.status || (store.settings().requireApproval ? 'pending' : 'active')),
         type: data.type || 'tortilleria',
         name: (data.name || '').trim(),
         email: (data.email || '').trim().toLowerCase(),
@@ -215,6 +215,59 @@
     if (!u) { location.href = '/login.html?next=' + encodeURIComponent(location.pathname); return null; }
     if (u.role !== 'admin') { location.href = '/perfil.html'; return null; }
     return u;
+  };
+
+
+  /* ---- Web Push (TP.push) --------------------------------------------- */
+  function urlBase64ToUint8Array(base64String) {
+    var padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+    var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    var raw = atob(base64);
+    var arr = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+    return arr;
+  }
+
+  TP.push = {
+    supported: function () {
+      return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+    },
+    getSubscription: async function () {
+      if (!TP.push.supported()) return null;
+      var reg = await navigator.serviceWorker.ready;
+      return reg.pushManager.getSubscription();
+    },
+    isEnabled: async function () {
+      try { return !!(await TP.push.getSubscription()); } catch (e) { return false; }
+    },
+    subscribe: async function () {
+      if (!TP.push.supported()) throw new Error('Tu navegador no soporta notificaciones push.');
+      var perm = await Notification.requestPermission();
+      if (perm !== 'granted') throw new Error('Permiso de notificaciones denegado.');
+      var keyRes = await fetch('/api/push/key');
+      if (!keyRes.ok) throw new Error('No se pudo obtener la llave pública del servidor.');
+      var pub = (await keyRes.json()).key;
+      var reg = await navigator.serviceWorker.ready;
+      var sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(pub),
+      });
+      var save = await fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sub.toJSON()),
+      });
+      if (!save.ok) {
+        var err = {}; try { err = await save.json(); } catch (e2) {}
+        throw new Error(err.error || 'No se pudo guardar la suscripción.');
+      }
+      return sub;
+    },
+    unsubscribe: async function () {
+      var sub = await TP.push.getSubscription();
+      if (sub) await sub.unsubscribe();
+      return true;
+    },
   };
 
   /* ---- Wire entry points across the marketing pages ------------------ */

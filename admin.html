@@ -55,10 +55,42 @@
 </div>
 </div>
 <div class="flex flex-wrap gap-3 mb-4">
-<input id="search" class="tp-field flex-1 min-w-[180px]" placeholder="Buscar por nombre, correo o ciudad…"/>
+<input id="search" class="tp-field flex-1 min-w-[180px]" placeholder="Buscar por nombre, correo, ciudad o negocio…"/>
 <select id="filter-type" class="tp-field w-auto"><option value="">Todos los tipos</option></select>
+<select id="filter-role" class="tp-field w-auto">
+<option value="">Todos los roles</option>
+<option value="admin">Administradores</option>
+<option value="member">Miembros</option>
+</select>
+<select id="filter-status" class="tp-field w-auto">
+<option value="">Todos los estados</option>
+<option value="active">Activos</option>
+<option value="pending">Pendientes</option>
+<option value="suspended">Suspendidos</option>
+</select>
+<select id="sort-by" class="tp-field w-auto">
+<option value="recent">Más recientes</option>
+<option value="az">A → Z</option>
+</select>
 </div>
 <div id="members" class="space-y-2"></div>
+<div class="mt-4 text-center"><button id="show-more" class="hidden text-sm font-bold text-primary px-4 py-2 rounded-lg border border-primary/40">Mostrar más</button></div>
+</section>
+
+<!-- Push notifications -->
+<section class="bg-surface-container-low border border-outline-variant/40 rounded-xl p-5">
+<div class="flex flex-wrap items-center justify-between gap-3 mb-1">
+<h2 class="font-headline-md text-headline-md flex items-center gap-2"><span class="material-symbols-outlined text-primary">campaign</span>Notificaciones push</h2>
+<span id="push-stats" class="text-on-surface-variant text-sm flex items-center gap-1"><span class="material-symbols-outlined text-base">notifications_active</span>—</span>
+</div>
+<p class="text-on-surface-variant text-sm mb-4">Envía un aviso a todos los dispositivos suscritos de la red.</p>
+<div class="space-y-3">
+<div><label class="tp-label" for="push-title">Título</label><input id="push-title" class="tp-field" maxlength="80" placeholder="Ej. Nuevo beneficio para tortillerías"/></div>
+<div><label class="tp-label" for="push-message">Mensaje</label><textarea id="push-message" rows="3" class="tp-field resize-none" maxlength="240" placeholder="Escribe el mensaje que recibirá la red…"></textarea></div>
+<div><label class="tp-label" for="push-key">Clave de administración (ADMIN_PUSH_KEY)</label><input id="push-key" type="password" class="tp-field" placeholder="Clave secreta del servidor"/></div>
+<button id="push-send" class="w-full md:w-auto px-5 py-3 rounded-xl bg-primary-container text-on-primary-container font-bold copper-glow flex items-center justify-center gap-2"><span class="material-symbols-outlined text-base">send</span>Enviar a la red</button>
+<p id="push-feedback" class="text-sm hidden"></p>
+</div>
 </section>
 </main>
 
@@ -80,14 +112,27 @@
     var me = TP.requireAdmin();
     if (!me) return;
 
+    // Every mutating action re-verifies the admin role first.
+    function assertAdmin() {
+      var u = TP.store.current();
+      if (!u || u.role !== 'admin') { location.href = '/perfil.html'; return null; }
+      return u;
+    }
+
+    var PAGE = 20;
+    var visible = PAGE;
+
     var membersEl = document.getElementById('members');
     var searchEl = document.getElementById('search');
-    var filterEl = document.getElementById('filter-type');
+    var filterTypeEl = document.getElementById('filter-type');
+    var filterRoleEl = document.getElementById('filter-role');
+    var filterStatusEl = document.getElementById('filter-status');
+    var sortEl = document.getElementById('sort-by');
+    var showMoreEl = document.getElementById('show-more');
     var drawer = document.getElementById('drawer');
     var drawerBody = document.getElementById('drawer-body');
 
-    // type filter options
-    filterEl.innerHTML = '<option value="">Todos los tipos</option>' +
+    filterTypeEl.innerHTML = '<option value="">Todos los tipos</option>' +
       TP.PROFILE_TYPES.map(function (t) { return '<option value="' + t.id + '">' + t.label + '</option>'; }).join('');
 
     // settings
@@ -95,127 +140,331 @@
     var openEl = document.getElementById('set-open'), apprEl = document.getElementById('set-approval');
     openEl.checked = settings.registrationOpen; apprEl.checked = settings.requireApproval;
     function saveSettings() {
+      if (!assertAdmin()) return;
       TP.store.saveSettings({ registrationOpen: openEl.checked, requireApproval: apprEl.checked });
     }
     openEl.addEventListener('change', saveSettings);
     apprEl.addEventListener('change', saveSettings);
 
+    var STATUS_BADGE = {
+      active: '<span class="text-primary text-xs font-bold px-2 py-0.5 rounded-full bg-primary/10">Activo</span>',
+      pending: '<span class="text-tertiary text-xs font-bold px-2 py-0.5 rounded-full bg-tertiary/10" style="color:#bfab56;background:rgba(191,171,86,.12)">Pendiente</span>',
+      suspended: '<span class="text-error text-xs font-bold px-2 py-0.5 rounded-full bg-error/10">Suspendido</span>',
+    };
+    var STATUS_LABEL = { active: 'Activo', pending: 'Pendiente', suspended: 'Suspendido' };
+
+    /* ---- KPIs ---- */
     function kpis() {
       var users = TP.store.users();
-      var today = new Date(); today.setHours(0, 0, 0, 0);
-      var newToday = users.filter(function (u) { return u.createdAt >= today.getTime(); }).length;
-      var states = {}; users.forEach(function (u) { if (u.location && u.location.state) states[u.location.state] = 1; });
-      var suspended = users.filter(function (u) { return u.status === 'suspended'; }).length;
+      var now = Date.now();
+      var weekAgo = now - 7 * 24 * 60 * 60 * 1000;
+      var active = 0, pending = 0, suspended = 0, newWeek = 0, byType = {};
+      users.forEach(function (u) {
+        if (u.status === 'suspended') suspended++;
+        else if (u.status === 'pending') pending++;
+        else active++;
+        if (u.createdAt >= weekAgo) newWeek++;
+        byType[u.type] = (byType[u.type] || 0) + 1;
+      });
       var data = [
-        ['groups', users.length, 'Miembros'],
-        ['map', Object.keys(states).length, 'Estados'],
-        ['fiber_new', newToday, 'Altas hoy'],
-        ['block', suspended, 'Suspendidos'],
+        ['groups', users.length, 'Miembros', newWeek > 0 ? '+' + newWeek + ' esta semana' : 'sin altas esta semana'],
+        ['verified', active, 'Activos', users.length ? Math.round(active * 100 / users.length) + '% de la red' : '—'],
+        ['hourglass_top', pending, 'Pendientes', pending ? 'requieren aprobación' : 'sin pendientes'],
+        ['block', suspended, 'Suspendidos', suspended ? 'revisa estos casos' : 'todo en orden'],
+        ['fiber_new', newWeek, 'Nuevos (7 días)', 'últimos 7 días'],
       ];
+      TP.PROFILE_TYPES.forEach(function (t) {
+        data.push([t.icon, byType[t.id] || 0, t.label, 'tipo de perfil']);
+      });
       document.getElementById('kpis').innerHTML = data.map(function (d) {
         return '<div class="bg-surface-container-low border border-outline-variant/40 rounded-xl p-4">' +
           '<span class="material-symbols-outlined text-primary copper-glow">' + d[0] + '</span>' +
           '<div class="font-display-lg text-[28px] leading-none mt-2 text-primary">' + d[1] + '</div>' +
-          '<div class="font-label-caps text-label-caps uppercase text-on-surface-variant mt-1">' + d[2] + '</div></div>';
+          '<div class="font-label-caps text-label-caps uppercase text-on-surface-variant mt-1">' + d[2] + '</div>' +
+          '<div class="text-on-surface-variant text-xs mt-1">' + d[3] + '</div></div>';
       }).join('');
     }
 
-    function list() {
+    /* ---- List ---- */
+    function filtered() {
       var q = searchEl.value.trim().toLowerCase();
-      var ft = filterEl.value;
+      var ft = filterTypeEl.value, fr = filterRoleEl.value, fs = filterStatusEl.value;
       var users = TP.store.users().filter(function (u) {
         if (ft && u.type !== ft) return false;
+        if (fr && u.role !== fr) return false;
+        if (fs && (u.status || 'active') !== fs) return false;
         if (!q) return true;
-        var hay = [u.name, u.email, u.location && u.location.city, u.location && u.location.state].join(' ').toLowerCase();
+        var hay = [u.name, u.email, u.location && u.location.city, u.location && u.location.state,
+          u.business && u.business.tradeName].join(' ').toLowerCase();
         return hay.indexOf(q) !== -1;
-      }).sort(function (a, b) { return b.createdAt - a.createdAt; });
+      });
+      if (sortEl.value === 'az') {
+        users.sort(function (a, b) { return (a.name || '').localeCompare(b.name || '', 'es'); });
+      } else {
+        users.sort(function (a, b) { return b.createdAt - a.createdAt; });
+      }
+      return users;
+    }
 
-      if (!users.length) { membersEl.innerHTML = '<p class="text-on-surface-variant py-6 text-center">Sin resultados.</p>'; return; }
+    function emptyState(icon, title, sub, ctaId, ctaLabel) {
+      return '<div class="text-center py-10">' +
+        '<span class="material-symbols-outlined text-5xl text-on-surface-variant/50">' + icon + '</span>' +
+        '<p class="font-bold mt-3">' + title + '</p>' +
+        '<p class="text-on-surface-variant text-sm mt-1">' + sub + '</p>' +
+        (ctaId ? '<button id="' + ctaId + '" class="mt-4 px-4 py-2 rounded-lg bg-primary-container text-on-primary-container font-bold copper-glow">' + ctaLabel + '</button>' : '') +
+        '</div>';
+    }
 
-      membersEl.innerHTML = users.map(function (u) {
-        var badge = u.status === 'suspended'
-          ? '<span class="text-error text-xs font-bold px-2 py-0.5 rounded-full bg-error/10">Suspendido</span>'
-          : (u.role === 'admin' ? '<span class="text-primary text-xs font-bold px-2 py-0.5 rounded-full bg-primary/10">Admin</span>' : '');
-        return '<button data-id="' + u.id + '" class="member-row w-full flex items-center gap-3 p-3 rounded-xl bg-surface-container hover:bg-surface-container-high transition-all text-left">' +
+    function list() {
+      var users = filtered();
+      var total = TP.store.users().length;
+
+      if (!total) {
+        membersEl.innerHTML = emptyState('diversity_3', 'Aún no hay miembros en la red',
+          'Crea el primer miembro o comparte el enlace de registro.', 'empty-add', 'Crear miembro');
+        showMoreEl.classList.add('hidden');
+        var ea = document.getElementById('empty-add');
+        if (ea) ea.addEventListener('click', openCreate);
+        return;
+      }
+      if (!users.length) {
+        membersEl.innerHTML = emptyState('search_off', 'Sin resultados',
+          'Ningún miembro coincide con tu búsqueda o filtros.', 'empty-clear', 'Limpiar filtros');
+        showMoreEl.classList.add('hidden');
+        var ec = document.getElementById('empty-clear');
+        if (ec) ec.addEventListener('click', function () {
+          searchEl.value = ''; filterTypeEl.value = ''; filterRoleEl.value = ''; filterStatusEl.value = ''; sortEl.value = 'recent';
+          visible = PAGE; list();
+        });
+        return;
+      }
+
+      var shown = users.slice(0, visible);
+      membersEl.innerHTML = shown.map(function (u) {
+        var status = u.status || 'active';
+        var badges = (STATUS_BADGE[status] || '') +
+          (u.role === 'admin' ? ' <span class="text-primary text-xs font-bold px-2 py-0.5 rounded-full border border-primary/40">Admin</span>' : '');
+        var approve = status === 'pending'
+          ? '<button data-approve="' + u.id + '" class="approve-btn text-xs font-bold px-3 py-1.5 rounded-lg bg-primary-container text-on-primary-container copper-glow shrink-0">Aprobar</button>'
+          : '';
+        return '<div class="flex items-center gap-2">' +
+          '<button data-id="' + u.id + '" class="member-row flex-1 min-w-0 flex items-center gap-3 p-3 rounded-xl bg-surface-container hover:bg-surface-container-high transition-all text-left">' +
           '<span class="h-10 w-10 rounded-full grid place-items-center text-white font-bold text-sm shrink-0" style="background:' + u.avatarColor + '">' + TP.initials(u.name) + '</span>' +
-          '<span class="flex-1 min-w-0"><span class="font-bold block truncate">' + esc(u.name) + ' ' + badge + '</span>' +
-          '<span class="text-on-surface-variant text-sm block truncate">' + esc(TP.typeLabel(u.type)) + ' · ' + esc((u.location && u.location.city) || '—') + '</span></span>' +
-          '<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span></button>';
+          '<span class="flex-1 min-w-0"><span class="font-bold block truncate">' + esc(u.name) + ' ' + badges + '</span>' +
+          '<span class="text-on-surface-variant text-sm block truncate">' + esc(TP.typeLabel(u.type)) + ' · ' + esc((u.location && u.location.city) || '—') + ' · ' + esc(u.email || '') + '</span></span>' +
+          '<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span></button>' +
+          approve + '</div>';
       }).join('');
+
+      showMoreEl.classList.toggle('hidden', users.length <= visible);
+      showMoreEl.textContent = 'Mostrar más (' + Math.max(0, users.length - visible) + ' restantes)';
 
       membersEl.querySelectorAll('.member-row').forEach(function (row) {
         row.addEventListener('click', function () { openDrawer(row.getAttribute('data-id')); });
       });
+      membersEl.querySelectorAll('.approve-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          if (!assertAdmin()) return;
+          TP.store.update(btn.getAttribute('data-approve'), { status: 'active' });
+          refresh();
+        });
+      });
     }
+
+    showMoreEl.addEventListener('click', function () { visible += PAGE; list(); });
+
+    /* ---- Drawer: edit member ---- */
+    function field(id, label, value, type) {
+      return '<div><label class="tp-label" for="' + id + '">' + label + '</label>' +
+        '<input id="' + id + '" type="' + (type || 'text') + '" class="tp-field" value="' + esc(value || '') + '"/></div>';
+    }
+    function kv(k, v) { return v ? '<div class="flex justify-between gap-3 py-1.5 border-b border-outline-variant/15"><span class="text-on-surface-variant">' + esc(k) + '</span><span class="font-medium text-right break-all">' + esc(v) + '</span></div>' : ''; }
 
     function openDrawer(id) {
       var u = TP.store.byId(id);
       if (!u) return;
       var b = u.business || {}, l = u.location || {};
       var isMe = u.id === me.id;
+      var status = u.status || 'active';
+      var typeOpts = TP.PROFILE_TYPES.map(function (t) {
+        return '<option value="' + t.id + '"' + (u.type === t.id ? ' selected' : '') + '>' + t.label + '</option>';
+      }).join('');
       drawerBody.innerHTML =
         '<div class="flex items-center justify-between mb-4">' +
         '<div class="flex items-center gap-3"><span class="h-12 w-12 rounded-full grid place-items-center text-white font-bold" style="background:' + u.avatarColor + '">' + TP.initials(u.name) + '</span>' +
         '<div><div class="font-headline-md text-headline-md">' + esc(u.name) + '</div>' +
-        '<div class="text-on-surface-variant text-sm">' + esc(TP.typeLabel(u.type)) + '</div></div></div>' +
+        '<div class="text-on-surface-variant text-sm">' + esc(TP.typeLabel(u.type)) + ' · ' + (STATUS_LABEL[status] || status) + '</div></div></div>' +
         '<button id="drawer-close" class="material-symbols-outlined text-on-surface-variant">close</button></div>' +
         '<div class="space-y-1 text-sm mb-5">' +
-        kv('Correo', u.email) + kv('Teléfono', u.phone) + kv('Negocio', b.tradeName) +
-        kv('Ubicación', [l.city, l.state].filter(Boolean).join(', ')) +
         kv('Alta', new Date(u.createdAt).toLocaleDateString('es-MX')) + kv('ID', u.id) + '</div>' +
         '<div class="space-y-3">' +
-        '<div><label class="tp-label">Rol</label><select id="d-role" class="tp-field"' + (isMe ? ' disabled' : '') + '>' +
+        field('d-name', 'Nombre', u.name) +
+        field('d-email', 'Correo', u.email, 'email') +
+        field('d-phone', 'Teléfono', u.phone, 'tel') +
+        field('d-trade', 'Negocio', b.tradeName) +
+        field('d-city', 'Ciudad', l.city) +
+        '<div><label class="tp-label" for="d-type">Tipo de perfil</label><select id="d-type" class="tp-field">' + typeOpts + '</select></div>' +
+        '<div><label class="tp-label" for="d-role">Rol</label><select id="d-role" class="tp-field"' + (isMe ? ' disabled' : '') + '>' +
         '<option value="member"' + (u.role === 'member' ? ' selected' : '') + '>Miembro</option>' +
         '<option value="admin"' + (u.role === 'admin' ? ' selected' : '') + '>Administrador</option></select>' +
         (isMe ? '<p class="text-on-surface-variant text-xs mt-1">No puedes cambiar tu propio rol.</p>' : '') + '</div>' +
-        '<div><label class="tp-label">Estado</label><select id="d-status" class="tp-field"' + (isMe ? ' disabled' : '') + '>' +
-        '<option value="active"' + (u.status === 'active' ? ' selected' : '') + '>Activo</option>' +
-        '<option value="suspended"' + (u.status === 'suspended' ? ' selected' : '') + '>Suspendido</option></select></div>' +
+        '<div><label class="tp-label" for="d-status">Estado</label><select id="d-status" class="tp-field"' + (isMe ? ' disabled' : '') + '>' +
+        '<option value="active"' + (status === 'active' ? ' selected' : '') + '>Activo</option>' +
+        '<option value="pending"' + (status === 'pending' ? ' selected' : '') + '>Pendiente</option>' +
+        '<option value="suspended"' + (status === 'suspended' ? ' selected' : '') + '>Suspendido</option></select></div>' +
         '<button id="d-save" class="w-full py-3 rounded-xl bg-primary-container text-on-primary-container font-bold copper-glow mt-2">Guardar cambios</button>' +
         (isMe ? '' : '<button id="d-delete" class="w-full py-3 rounded-xl border border-error/50 text-error font-bold flex items-center justify-center gap-1"><span class="material-symbols-outlined text-base">delete</span>Eliminar miembro</button>') +
         '</div>';
       drawer.classList.remove('hidden');
       document.getElementById('drawer-close').addEventListener('click', closeDrawer);
       document.getElementById('d-save').addEventListener('click', function () {
-        TP.store.update(u.id, { role: document.getElementById('d-role').value, status: document.getElementById('d-status').value });
+        if (!assertAdmin()) return;
+        var newEmail = document.getElementById('d-email').value.trim().toLowerCase();
+        if (newEmail !== u.email && TP.store.findByEmail(newEmail)) { alert('Ya existe otra cuenta con ese correo.'); return; }
+        var newRole = isMe ? u.role : document.getElementById('d-role').value;
+        var newStatus = isMe ? status : document.getElementById('d-status').value;
+        if (!isMe && newRole !== u.role && !confirm('¿Cambiar el rol de ' + u.name + ' a ' + (newRole === 'admin' ? 'Administrador' : 'Miembro') + '?')) return;
+        if (!isMe && newStatus !== status && !confirm('¿Cambiar el estado de ' + u.name + ' a ' + (STATUS_LABEL[newStatus] || newStatus) + '?')) return;
+        TP.store.update(u.id, {
+          name: document.getElementById('d-name').value.trim() || u.name,
+          email: newEmail || u.email,
+          phone: document.getElementById('d-phone').value.trim(),
+          type: document.getElementById('d-type').value,
+          role: newRole,
+          status: newStatus,
+          business: Object.assign({}, u.business, { tradeName: document.getElementById('d-trade').value.trim() }),
+          location: Object.assign({}, u.location, { city: document.getElementById('d-city').value.trim() }),
+        });
         closeDrawer(); refresh();
       });
       var del = document.getElementById('d-delete');
       if (del) del.addEventListener('click', function () {
+        if (!assertAdmin()) return;
         if (confirm('¿Eliminar a ' + u.name + '? Esta acción no se puede deshacer.')) {
           TP.store.remove(u.id); closeDrawer(); refresh();
         }
       });
     }
-    function kv(k, v) { return v ? '<div class="flex justify-between gap-3 py-1.5 border-b border-outline-variant/15"><span class="text-on-surface-variant">' + esc(k) + '</span><span class="font-medium text-right break-all">' + esc(v) + '</span></div>' : ''; }
     function closeDrawer() { drawer.classList.add('hidden'); }
     document.getElementById('drawer-bg').addEventListener('click', closeDrawer);
 
-    function refresh() { kpis(); list(); }
+    /* ---- Create member (drawer form) ---- */
+    function openCreate() {
+      if (!assertAdmin()) return;
+      var typeOpts = TP.PROFILE_TYPES.map(function (t) { return '<option value="' + t.id + '">' + t.label + '</option>'; }).join('');
+      drawerBody.innerHTML =
+        '<div class="flex items-center justify-between mb-4">' +
+        '<div class="font-headline-md text-headline-md flex items-center gap-2"><span class="material-symbols-outlined text-primary">person_add</span>Nuevo miembro</div>' +
+        '<button id="drawer-close" class="material-symbols-outlined text-on-surface-variant">close</button></div>' +
+        '<div class="space-y-3">' +
+        field('c-name', 'Nombre *') + field('c-email', 'Correo *', '', 'email') +
+        field('c-phone', 'Teléfono', '', 'tel') + field('c-pass', 'Contraseña temporal *', 'tortillap') +
+        field('c-trade', 'Negocio') + field('c-city', 'Ciudad') +
+        '<div><label class="tp-label" for="c-type">Tipo de perfil</label><select id="c-type" class="tp-field">' + typeOpts + '</select></div>' +
+        '<div><label class="tp-label" for="c-role">Rol</label><select id="c-role" class="tp-field"><option value="member">Miembro</option><option value="admin">Administrador</option></select></div>' +
+        '<p id="c-error" class="text-error text-sm hidden"></p>' +
+        '<button id="c-save" class="w-full py-3 rounded-xl bg-primary-container text-on-primary-container font-bold copper-glow mt-2">Crear miembro</button></div>';
+      drawer.classList.remove('hidden');
+      document.getElementById('drawer-close').addEventListener('click', closeDrawer);
+      document.getElementById('c-save').addEventListener('click', async function () {
+        if (!assertAdmin()) return;
+        var errEl = document.getElementById('c-error');
+        function v(id) { return document.getElementById(id).value.trim(); }
+        var name = v('c-name'), email = v('c-email'), pass = v('c-pass');
+        if (!name || !email || !pass) { errEl.textContent = 'Nombre, correo y contraseña son obligatorios.'; errEl.classList.remove('hidden'); return; }
+        if (TP.store.findByEmail(email)) { errEl.textContent = 'Ya existe una cuenta con ese correo.'; errEl.classList.remove('hidden'); return; }
+        var keep = TP.store.current();
+        var nu = await TP.store.register({
+          type: document.getElementById('c-type').value, name: name, email: email, password: pass,
+          phone: v('c-phone'),
+          business: { tradeName: v('c-trade') },
+          location: { city: v('c-city') },
+        });
+        TP.store.update(nu.id, { role: document.getElementById('c-role').value });
+        if (keep) TP.store.setSession(keep.id); // registration auto-logs-in; restore admin session
+        closeDrawer(); refresh();
+      });
+    }
+    document.getElementById('add-btn').addEventListener('click', openCreate);
 
-    // controls
-    searchEl.addEventListener('input', list);
-    filterEl.addEventListener('change', list);
-    document.getElementById('logout-btn').addEventListener('click', function () { TP.store.logout(); location.href = '/index.html'; });
+    /* ---- Export CSV ---- */
     document.getElementById('export-btn').addEventListener('click', function () {
-      var data = JSON.stringify(TP.store.users().map(function (u) { var c = Object.assign({}, u); delete c.passhash; return c; }), null, 2);
-      var blob = new Blob([data], { type: 'application/json' });
+      if (!assertAdmin()) return;
+      var cols = ['id', 'name', 'email', 'phone', 'type', 'role', 'status', 'createdAt', 'business', 'city', 'state'];
+      var head = ['ID', 'Nombre', 'Correo', 'Teléfono', 'Tipo', 'Rol', 'Estado', 'Alta', 'Negocio', 'Ciudad', 'Estado (ubicación)'];
+      function cell(v) {
+        v = v == null ? '' : String(v);
+        return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+      }
+      var rows = TP.store.users().map(function (u) {
+        return [u.id, u.name, u.email, u.phone, TP.typeLabel(u.type), u.role, STATUS_LABEL[u.status || 'active'] || u.status,
+          new Date(u.createdAt).toISOString(), (u.business && u.business.tradeName) || '',
+          (u.location && u.location.city) || '', (u.location && u.location.state) || ''].map(cell).join(',');
+      });
+      var csv = '\uFEFF' + head.join(',') + '\n' + rows.join('\n');
+      var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
       var a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = 'tortillap-miembros.json';
+      a.download = 'tortillap-miembros.csv';
       a.click(); URL.revokeObjectURL(a.href);
     });
-    document.getElementById('add-btn').addEventListener('click', async function () {
-      var name = prompt('Nombre del nuevo miembro:'); if (!name) return;
-      var email = prompt('Correo:'); if (!email) return;
-      if (TP.store.findByEmail(email)) { alert('Ya existe una cuenta con ese correo.'); return; }
-      var pass = prompt('Contraseña temporal:', 'tortillap'); if (!pass) return;
-      var keep = TP.store.current();
-      await TP.store.register({ type: 'tortilleria', name: name, email: email, password: pass });
-      if (keep) TP.store.setSession(keep.id); // registration auto-logs-in; restore admin session
-      refresh();
-    });
 
+    /* ---- Push admin ---- */
+    var pushFeedback = document.getElementById('push-feedback');
+    function feedback(msg, ok) {
+      pushFeedback.textContent = msg;
+      pushFeedback.className = 'text-sm ' + (ok ? 'text-primary' : 'text-error');
+    }
+    function loadPushStats() {
+      fetch('/api/push/stats').then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+        .then(function (res) {
+          document.getElementById('push-stats').innerHTML =
+            '<span class="material-symbols-outlined text-base">notifications_active</span>' +
+            (res.ok ? res.j.subscribers + ' suscriptores' : 'sin datos (' + (res.j.error || 'error') + ')');
+        })
+        .catch(function () {
+          document.getElementById('push-stats').innerHTML =
+            '<span class="material-symbols-outlined text-base">notifications_off</span>API no disponible';
+        });
+    }
+    document.getElementById('push-send').addEventListener('click', function () {
+      if (!assertAdmin()) return;
+      var title = document.getElementById('push-title').value.trim();
+      var message = document.getElementById('push-message').value.trim();
+      var key = document.getElementById('push-key').value.trim();
+      if (!title || !message) { feedback('Escribe un título y un mensaje.', false); return; }
+      if (!key) { feedback('Ingresa la clave de administración.', false); return; }
+      var btn = document.getElementById('push-send');
+      btn.disabled = true;
+      fetch('/api/push/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': key },
+        body: JSON.stringify({ title: title, message: message }),
+      }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+        .then(function (res) {
+          if (res.ok) {
+            feedback('Enviado: ' + res.j.sent + ' entregadas, ' + res.j.failed + ' fallidas de ' + res.j.total + ' suscripciones.', true);
+            document.getElementById('push-title').value = '';
+            document.getElementById('push-message').value = '';
+            loadPushStats();
+          } else {
+            feedback('Error: ' + (res.j.error || 'no se pudo enviar.'), false);
+          }
+        })
+        .catch(function () { feedback('Error de red al contactar /api/push/send.', false); })
+        .finally(function () { btn.disabled = false; });
+    });
+    loadPushStats();
+
+    /* ---- Controls ---- */
+    function resetAndList() { visible = PAGE; list(); }
+    searchEl.addEventListener('input', resetAndList);
+    [filterTypeEl, filterRoleEl, filterStatusEl, sortEl].forEach(function (el) {
+      el.addEventListener('change', resetAndList);
+    });
+    document.getElementById('logout-btn').addEventListener('click', function () { TP.store.logout(); location.href = '/index.html'; });
+
+    function refresh() { kpis(); list(); }
     refresh();
   });
 })();
