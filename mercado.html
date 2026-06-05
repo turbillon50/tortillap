@@ -2,7 +2,7 @@
 
 <html class="dark" lang="es" data-page="mercado"><head>
 <meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
 <title>Tortillap - Mercado de Infraestructura</title>
 <meta name="application-name" content="Tortillap"/>
 <meta name="apple-mobile-web-app-title" content="Tortillap"/>
@@ -135,10 +135,11 @@
   </style>
   <script>(function(){try{var t=localStorage.getItem("tp-theme");if(t!=="light"&&t!=="dark"){t=window.matchMedia&&window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";}var r=document.documentElement;r.classList.toggle("dark",t==="dark");r.classList.toggle("light",t==="light");}catch(e){}})();</script>
 <link rel="stylesheet" href="/assets/theme.css"/>
+<style>html,body{overscroll-behavior-y:none;}</style>
 </head>
 <body class="bg-background text-on-background font-body-md min-h-screen pb-32">
 <!-- TopAppBar -->
-<header class="fixed top-0 w-full z-50 bg-background/80 dark:bg-background/80 backdrop-blur-xl border-b border-white/10 shadow-2xl shadow-primary/5 flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 w-full">
+<header class="fixed top-0 w-full z-50 bg-background/80 dark:bg-background/80 backdrop-blur-xl border-b border-white/10 shadow-2xl shadow-primary/5 flex justify-between items-center px-margin-mobile md:px-margin-desktop min-h-16 w-full" style="padding-top: env(safe-area-inset-top, 0px)">
 <div class="flex items-center gap-3">
 <span class="material-symbols-outlined text-primary" style="font-size: 28px;">hub</span>
 <h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold tracking-tight text-on-background">Tortillap</h1>
